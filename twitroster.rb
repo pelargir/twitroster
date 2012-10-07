@@ -1,11 +1,11 @@
 require 'rubygems'
 require 'uri'
 
-gem "rack", '~> 1.0'; require 'rack'
-gem 'sinatra', '~> 0.9'; require 'sinatra'
-gem 'json', '~> 1.1'; require 'json'
-gem 'httparty', '~> 0.4'; require 'httparty'
-gem 'rack-contrib', '~> 0.9'; require 'rack/contrib'
+gem "rack", '~> 1.4'; require 'rack'
+gem 'sinatra', '~> 1.3'; require 'sinatra'
+gem 'json', '~> 1.7'; require 'json'
+gem 'httparty', '~> 0.9'; require 'httparty'
+gem 'rack-contrib', '~> 1.1'; require 'rack/contrib'
 gem 'tmail', '~> 1.2'
 
 PRODUCTION_HOST = "example.com"
@@ -159,7 +159,7 @@ class Twitter
     end
   rescue Timeout::Error => e
     raise Error.new("Twitter timed out; maybe it's down?")
-  rescue Crack::ParseError => e
+  rescue JSON::ParserError => e
     raise Error.new("Bad response from Twitter; maybe it's down?")
   rescue Errno::ECONNRESET, EOFError => e
     raise Error.new("We were chatting with Twitter and got cut off - try refreshing.")
@@ -173,7 +173,7 @@ class Twitter
   def self.cache_read(key)
     filename = CACHE_DIR + "/twitter/#{key}"
     if File.exist?(filename) && File.mtime(filename) > (Time.now - (TWITTER_CACHE_EXPIRY))
-      Crack::JSON.parse(File.read(filename))
+      JSON.parse(File.read(filename))
     else
       nil
     end
