@@ -1,23 +1,19 @@
 require 'rubygems'
 require 'uri'
 
-gem "rack", '~> 1.4'; require 'rack'
+gem 'rack', '~> 1.4'; require 'rack'
 gem 'sinatra', '~> 1.3'; require 'sinatra'
 gem 'json', '~> 1.7'; require 'json'
 gem 'httparty', '~> 0.9'; require 'httparty'
 gem 'rack-contrib', '~> 1.1'; require 'rack/contrib'
 gem 'tmail', '~> 1.2'
 
-PRODUCTION_HOST = "example.com"
-ADMIN_PASSWORD = "password"
-ADMIN_EMAIL = "bob@example.com"
-
 configure :development do
-  HOST = "twitroster.dev"
+  HOST = "localhost:4567"
 end
 
 configure :production do
-  HOST = PRODUCTION_HOST
+  HOST = ENV['PRODUCTION_HOST']
 end
 
 configure :production, :development do
@@ -226,7 +222,7 @@ helpers do
 
   def authorized?
     @auth ||=  Rack::Auth::Basic::Request.new(request.env)
-    @auth.provided? && @auth.basic? && @auth.credentials && @auth.credentials == ['admin', ADMIN_PASSWORD]
+    @auth.provided? && @auth.basic? && @auth.credentials && @auth.credentials == ['admin', ENV['ADMIN_PASSWORD']]
   end
 end
 
@@ -247,7 +243,7 @@ configure :production do
 
   set :raise_errors, true
   use Rack::MailExceptions do |mail|
-    mail.to ADMIN_EMAIL
+    mail.to ENV['ADMIN_EMAIL']
     mail.subject '[TWITROSTER ERROR] %s'
     mail.smtp :authentication => nil
   end
